@@ -1,6 +1,6 @@
 # Blog Writing Website Backend
  
-Backend for a Merch selling website using:
+Backend for a Blog Writing website using:
 * [Node.js](https://nodejs.org/)
 * [Express.js](https://expressjs.com/)
 * [MongoDB](https://www.mongodb.com/)
