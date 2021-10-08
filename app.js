@@ -5,6 +5,6 @@ const blogRoutes = require('./Routes/Blog-routes');
 
 const app = express();
 
-app.use(blogRoutes);
+app.use("/blogs", blogRoutes);
 
 app.listen(5000);
