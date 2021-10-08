@@ -2,9 +2,18 @@ const express = require("express");
 
 const router = express.Router();
 
-router.get('/',(req,res,next)=>{
-    console.log("GET Request in Place");
-    res.json({message:'It works'});
-})
+const blogControllers = require('../Controllers/Blog-controllers');
+
+router.get('/',blogControllers.getAllBlogs);
+
+router.get('/:pid',blogControllers.getBlogsById);
+
+router.get('/user/:uid',blogControllers.getBlogsByUserId);
+
+router.post('/create',blogControllers.createBlog);
+
+router.patch('/:pid',blogControllers.updateBlog);
+
+router.delete('/:pid',blogControllers.deleteBlog);
 
 module.exports = router;
