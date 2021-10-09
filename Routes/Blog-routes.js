@@ -1,4 +1,5 @@
 const express = require("express");
+const { check } = require("express-validator");
 
 const router = express.Router();
 
@@ -10,7 +11,11 @@ router.get('/:pid',blogControllers.getBlogsById);
 
 router.get('/user/:uid',blogControllers.getBlogsByUserId);
 
-router.post('/create',blogControllers.createBlog);
+router.post(
+  "/create",
+  [check("title").not().isEmpty(), check("description").not().isEmpty()],
+  blogControllers.createBlog
+);
 
 router.patch('/:pid',blogControllers.updateBlog);
 
