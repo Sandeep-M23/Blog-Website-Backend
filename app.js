@@ -1,6 +1,6 @@
 const express = require("express");
-
 const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 
 const blogRoutes = require("./Routes/Blog-routes");
 const userRoutes = require("./Routes/User-routes");
@@ -26,4 +26,14 @@ app.use((error, req, res, next) => {
   res.json({ message: error.message || "An Unknown Error Has Been Detected!" });
 });
 
-app.listen(5000);
+
+mongoose
+  .connect(
+    "mongodb+srv://sandeep_m:pYyYE0lGyjpgHU5H@cluster0.szf4e.mongodb.net/blog?retryWrites=true&w=majority"
+  )
+  .then(() => {
+    app.listen(5000);
+  })
+  .catch((error) => {
+    console.log(error);
+  });
