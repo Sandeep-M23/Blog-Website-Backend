@@ -5,26 +5,18 @@ const {validationResult} = require('express-validator');
 const HttpError = require('../Models/http-Error');
 const Blog = require('../Models/blog');
 
-let DUMMY_BLOGS = [
-  {
-    id: "b1",
-    title: "The Eiffel Tower",
-    description:
-      "The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in Paris, France. It is named after the engineer Gustave Eiffel, whose company designed and built the tower.",
-    creatorId: "p1",
-  },
-  {
-    id: "b2",
-    title: "The Eiffel Tower",
-    description:
-      "The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in Paris, France. It is named after the engineer Gustave Eiffel, whose company designed and built the tower.",
-    creatorId: "p2",
-  },
-];
-
-const getAllBlogs =  (req, res, next) => {
-  console.log("GET ALL BLOGS");
-  res.json({ blogs: DUMMY_BLOGS });
+const getAllBlogs =  async(req, res, next) => {
+  let blogs;
+  try{
+    blogs = await Blog.find({});
+  }catch(err){
+    const error = new HttpError(
+      "Something Went Wrong ,could not Find Blogs",
+      500
+    );
+    return next(error);
+  }
+  res.json({blogs:blogs.map(blog => blog.toObject({getters:true}))})
 };
 
 const getBlogsById = async(req, res, next) => {
@@ -52,13 +44,19 @@ const getBlogsById = async(req, res, next) => {
   res.json({ blog: blog.toObject({ getters: true }) });
 };
 
-const getBlogsByUserId = (req, res, next) => {
-  console.log("GET BLOGS BY USER ID");
+const getBlogsByUserId = async (req, res, next) => {
   const userId = req.params.uid;
+
   let blogs;
-  blogs = DUMMY_BLOGS.filter((user)=>{
-    return user.creatorId === userId;
-  });
+  try {
+    blogs = await Blog.find({ creatorId: userId });
+  } catch (err) {
+    const error = new HttpError(
+      "Something Went Wrong ,could not Find Blog",
+      500
+    );
+    return next(error);
+  }
 
   if (!blogs || blogs.length === 0) {
     return next(
@@ -66,7 +64,7 @@ const getBlogsByUserId = (req, res, next) => {
     );
   }
 
-  res.json({ blogs });
+  res.json({ blogs: blogs.map((blog) => blog.toObject({ getters: true })) });
 };
 
 const createBlog = async (req, res, next) => {
@@ -97,31 +95,60 @@ const createBlog = async (req, res, next) => {
   res.status(201).json({ blog: createdBlog });
 };
 
-const updateBlog =  (req, res, next) => {
-  console.log("UPDATE/EDIT BLOG");
+const updateBlog =  async(req, res, next) => {
   const { title, description } = req.body;
   const blogId = req.params.pid;
 
-  const updatedBlog = {
-    ...DUMMY_BLOGS.find((p) => {
-      return p.id === blogId;
-    }),
-  };
-  const BlogIndex = DUMMY_BLOGS.findIndex((p) => p.id === blogId);
-  updatedBlog.title = title;
-  updatedBlog.description = description;
+  let blog;
+  try{
+    blog = await Blog.findById(blogId)
+  }catch(err){
+    const error = new HttpError(
+      "Something Went Wrong ,could not Find Blog",
+      500
+    );
+    return next(error);
+  }
 
-  DUMMY_BLOGS[BlogIndex] = updatedBlog;
+  blog.title = title;
+  blog.description = description;
 
-  res.status(201).json({ blog: updatedBlog });
+  try {
+    await blog.save();
+  } catch (err) {
+    const error = new HttpError(
+      "Something Went Wrong ,could not Find Blog",
+      500
+    );
+    return next(error);
+  }
+
+  res.status(201).json({ blog: blog.toObject({ getters: true }) });
 };
 
-const deleteBlog =  (req, res, next) => {
-  console.log("DELETE BLOG");
+const deleteBlog =  async(req, res, next) => {
   const blogId = req.params.pid;
-  DUMMY_BLOGS = DUMMY_BLOGS.filter((p)=>{
-    return p.id !== blogId
-  });
+
+  let blog;
+  try{
+    blog = await Blog.findById(blogId)
+  }catch(err){
+    const error = new HttpError(
+      "Something Went Wrong ,could not Find Blog",
+      500
+    );
+    return next(error);
+  }
+
+  try {
+    await blog.remove();
+  } catch (err) {
+    const error = new HttpError(
+      "Something Went Wrong ,could not Find Blog",
+      500
+    );
+    return next(error);
+  }
 
   res.status(200).json({message:'Deleted Blog.'})
 };
