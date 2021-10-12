@@ -96,6 +96,13 @@ const createBlog = async (req, res, next) => {
 };
 
 const updateBlog =  async(req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(
+      new HttpError('Invalid inputs passed, please check your data.', 422)
+    );
+  }
+
   const { title, description } = req.body;
   const blogId = req.params.pid;
 
