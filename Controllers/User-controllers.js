@@ -1,5 +1,5 @@
 const express = require("express");
-
+const mongoose = require("mongoose");
 const { validationResult } = require("express-validator");
 
 const HttpError = require("../Models/http-Error");
@@ -34,7 +34,7 @@ const signup = async(req, res, next) => {
     name,
     email,
     password,
-    blogs,
+    blogs : []
   });
 
   try {

@@ -49,7 +49,7 @@ const getBlogsByUserId = async (req, res, next) => {
 
   let blogs;
   try {
-    blogs = await Blog.find({ creatorId: userId });
+    blogs = await Blog.find({ creator: userId });
   } catch (err) {
     const error = new HttpError(
       "Something Went Wrong ,could not Find Blog",
@@ -75,14 +75,14 @@ const createBlog = async (req, res, next) => {
     );
   }
 
-  const { title, description, creatorId } = req.body;
+  const { title, description, creator } = req.body;
 
   const createdBlog = new Blog({
     title,
     description,
     image:
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvo01uSr4X5jWbAu1-wZ6zy23mKrEMtv8MFA&usqp=CAU",
-    creatorId,
+    creator,
   });
 
   try {
