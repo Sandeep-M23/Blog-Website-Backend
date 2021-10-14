@@ -4,19 +4,20 @@ const {validationResult} = require('express-validator');
 
 const HttpError = require('../Models/http-Error');
 const Blog = require('../Models/blog');
+const User = require('../Models/user');
 
 const getAllBlogs =  async(req, res, next) => {
   let blogs;
-  try{
+  try {
     blogs = await Blog.find({});
-  }catch(err){
+  } catch (err) {
     const error = new HttpError(
       "Something Went Wrong ,could not Find Blogs",
       500
     );
     return next(error);
   }
-  res.json({blogs:blogs.map(blog => blog.toObject({getters:true}))})
+  res.json({ blogs: blogs.map((blog) => blog.toObject({ getters: true })) });
 };
 
 const getBlogsById = async(req, res, next) => {
@@ -47,9 +48,9 @@ const getBlogsById = async(req, res, next) => {
 const getBlogsByUserId = async (req, res, next) => {
   const userId = req.params.uid;
 
-  let blogs;
+  let userWithBlogs;
   try {
-    blogs = await Blog.find({ creator: userId });
+    userWithBlogs = await User.findById(userId).populate("blogs");
   } catch (err) {
     const error = new HttpError(
       "Something Went Wrong ,could not Find Blog",
@@ -58,13 +59,15 @@ const getBlogsByUserId = async (req, res, next) => {
     return next(error);
   }
 
-  if (!blogs || blogs.length === 0) {
+  if (!userWithBlogs || userWithBlogs.blogs.length === 0) {
     return next(
       new HttpError("Could not find the blogs for the provided user Id.", 404)
     );
   }
 
-  res.json({ blogs: blogs.map((blog) => blog.toObject({ getters: true })) });
+  res.json({
+    blogs: userWithBlogs.blogs.map((blog) => blog.toObject({ getters: true })),
+  });
 };
 
 const createBlog = async (req, res, next) => {
@@ -75,7 +78,7 @@ const createBlog = async (req, res, next) => {
     );
   }
 
-  const { title, description, creator } = req.body;
+  const { title, description,creator} = req.body;
 
   const createdBlog = new Blog({
     title,
@@ -85,8 +88,31 @@ const createBlog = async (req, res, next) => {
     creator,
   });
 
+  let user;
+  try{
+    user = await User.findById(creator)
+  }catch(err){
+    const error = new HttpError(
+      'Creating Blog failed, please try again.',
+      500
+    );
+    return next(error);
+  }
+
+  if (!user) {
+    const error = new HttpError("Could Not Find User for Provided ID", 404);
+    return next(error);
+  }
+
+  console.log(user);
+
   try {
-    await createdBlog.save();
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await createdBlog.save({ session: sess });
+    user.blogs.push(createdBlog);
+    await user.save({ session: sess });
+    await sess.commitTransaction();
   } catch (err) {
     const error = new HttpError("Creating Blog Failed! Please Try Again.", 500);
     return next(error);
@@ -138,7 +164,7 @@ const deleteBlog =  async(req, res, next) => {
 
   let blog;
   try{
-    blog = await Blog.findById(blogId)
+    blog = await Blog.findById(blogId).populate('creator')
   }catch(err){
     const error = new HttpError(
       "Something Went Wrong ,could not Find Blog",
@@ -147,8 +173,18 @@ const deleteBlog =  async(req, res, next) => {
     return next(error);
   }
 
+  if (!blog) {
+    const error = new HttpError("COuld not find Blog fro the provided Id", 404);
+    return next(error);
+  }
+
   try {
-    await blog.remove();
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await blog.remove({session:sess});
+    blog.creator.blogs.pull(blog);
+    await blog.creator.save({ session: sess });
+    await sess.commitTransaction();
   } catch (err) {
     const error = new HttpError(
       "Something Went Wrong ,could not Find Blog",
