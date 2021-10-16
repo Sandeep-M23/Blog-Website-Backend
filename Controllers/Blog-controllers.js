@@ -78,7 +78,7 @@ const createBlog = async (req, res, next) => {
     );
   }
 
-  const { title, description,creator} = req.body;
+  const { title, description, creator } = req.body;
 
   const createdBlog = new Blog({
     title,
