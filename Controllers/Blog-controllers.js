@@ -59,7 +59,7 @@ const getBlogsByUserId = async (req, res, next) => {
     return next(error);
   }
 
-  if (!userWithBlogs || userWithBlogs.blogs.length === 0) {
+  if (!userWithBlogs) {
     return next(
       new HttpError("Could not find the blogs for the provided user Id.", 404)
     );
