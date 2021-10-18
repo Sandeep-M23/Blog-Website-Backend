@@ -164,7 +164,7 @@ const deleteBlog =  async(req, res, next) => {
 
   let blog;
   try{
-    blog = await Blog.findById(blogId).populate('creator')
+    blog = await Blog.findById(blogId).populate({ path: 'creator', model: User })
   }catch(err){
     const error = new HttpError(
       "Something Went Wrong ,could not Find Blog",
