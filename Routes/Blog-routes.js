@@ -1,19 +1,21 @@
 const express = require("express");
 const { check } = require("express-validator");
+const fileUpload = require("../Middleware/File-Upload");
 
 const router = express.Router();
 
-const blogControllers = require('../Controllers/Blog-controllers');
+const blogControllers = require("../Controllers/Blog-controllers");
 
-router.get('/',blogControllers.getAllBlogs);
+router.get("/", blogControllers.getAllBlogs);
 
-router.get('/:pid',blogControllers.getBlogsById);
+router.get("/:pid", blogControllers.getBlogsById);
 
-router.get('/user/:uid',blogControllers.getBlogsByUserId);
+router.get("/user/:uid", blogControllers.getBlogsByUserId);
 
 router.post(
   "/create",
-  [check("title").not().isEmpty(), check("description").not().isEmpty()],
+  fileUpload.single("image"),
+  [(check("title").not().isEmpty(), check("description").not().isEmpty())],
   blogControllers.createBlog
 );
 

@@ -1,4 +1,4 @@
-const express = require("express");
+const fs = require('fs');
 const mongoose = require("mongoose");
 const {validationResult} = require('express-validator');
 
@@ -83,8 +83,7 @@ const createBlog = async (req, res, next) => {
   const createdBlog = new Blog({
     title,
     description,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvo01uSr4X5jWbAu1-wZ6zy23mKrEMtv8MFA&usqp=CAU",
+    image:req.file.path,
     creator,
   });
 
@@ -178,6 +177,8 @@ const deleteBlog =  async(req, res, next) => {
     return next(error);
   }
 
+  const imagePath = blog.image;
+
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
@@ -192,6 +193,10 @@ const deleteBlog =  async(req, res, next) => {
     );
     return next(error);
   }
+
+  fs.unlink(imagePath,err=>{
+    console.log(err)
+  })
 
   res.status(200).json({message:'Deleted Blog.'})
 };
