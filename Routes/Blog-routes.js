@@ -1,10 +1,11 @@
 const express = require("express");
 const { check } = require("express-validator");
-const fileUpload = require("../Middleware/File-Upload");
 
 const router = express.Router();
 
 const blogControllers = require("../Controllers/Blog-controllers");
+
+const fileUpload = require("../Middleware/File-Upload");
 
 router.get("/", blogControllers.getAllBlogs);
 
