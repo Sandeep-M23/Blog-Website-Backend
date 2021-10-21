@@ -7,11 +7,15 @@ const blogControllers = require("../Controllers/Blog-controllers");
 
 const fileUpload = require("../Middleware/File-Upload");
 
+const checkAuth = require("../Middleware/Check-Auth.js");
+
 router.get("/", blogControllers.getAllBlogs);
 
 router.get("/:pid", blogControllers.getBlogsById);
 
 router.get("/user/:uid", blogControllers.getBlogsByUserId);
+
+router.use(checkAuth);
 
 router.post(
   "/create",
@@ -20,8 +24,8 @@ router.post(
   blogControllers.createBlog
 );
 
-router.patch('/:pid',blogControllers.updateBlog);
+router.patch("/:pid", blogControllers.updateBlog);
 
-router.delete('/:pid',blogControllers.deleteBlog);
+router.delete("/:pid", blogControllers.deleteBlog);
 
 module.exports = router;
