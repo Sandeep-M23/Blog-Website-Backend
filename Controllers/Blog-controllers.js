@@ -142,6 +142,11 @@ const updateBlog =  async(req, res, next) => {
     return next(error);
   }
 
+  if (blog.creator.toString() !== req.userData.userId) {
+    const error = new HttpError("You are not allowed to edit this place.", 401);
+    return next(error);
+  }
+
   blog.title = title;
   blog.description = description;
 
@@ -174,6 +179,14 @@ const deleteBlog =  async(req, res, next) => {
 
   if (!blog) {
     const error = new HttpError("COuld not find Blog fro the provided Id", 404);
+    return next(error);
+  }
+
+  if (blog.creator.id !== req.userData.userId) {
+    const error = new HttpError(
+      'You are not allowed to delete this place.',
+      401
+    );
     return next(error);
   }
 
