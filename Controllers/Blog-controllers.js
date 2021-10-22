@@ -74,32 +74,33 @@ const createBlog = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(
-      new HttpError("Invalid inputs passed, please check your data.", 422)
+      new HttpError('Invalid inputs passed, please check your data.', 422)
     );
   }
 
-  const { title, description, creator } = req.body;
+  const { title, description} = req.body;
+
 
   const createdBlog = new Blog({
     title,
     description,
-    image:req.file.path,
-    creator,
+    image: req.file.path,
+    creator: req.userData.userId
   });
 
   let user;
-  try{
-    user = await User.findById(creator)
-  }catch(err){
+  try {
+    user = await User.findById(req.userData.userId);
+  } catch (err) {
     const error = new HttpError(
-      'Creating Blog failed, please try again.',
+      'Creating blog failed, please try again.',
       500
     );
     return next(error);
   }
 
   if (!user) {
-    const error = new HttpError("Could Not Find User for Provided ID", 404);
+    const error = new HttpError('Could not find user for provided id.', 404);
     return next(error);
   }
 
@@ -113,7 +114,10 @@ const createBlog = async (req, res, next) => {
     await user.save({ session: sess });
     await sess.commitTransaction();
   } catch (err) {
-    const error = new HttpError("Creating Blog Failed! Please Try Again.", 500);
+    const error = new HttpError(
+      'Creating blog failed, please try again.',
+      500
+    );
     return next(error);
   }
 
@@ -163,28 +167,28 @@ const updateBlog =  async(req, res, next) => {
   res.status(201).json({ blog: blog.toObject({ getters: true }) });
 };
 
-const deleteBlog =  async(req, res, next) => {
+const deleteBlog = async (req, res, next) => {
   const blogId = req.params.pid;
 
   let blog;
-  try{
-    blog = await Blog.findById(blogId).populate({ path: 'creator', model: User })
-  }catch(err){
+  try {
+    blog = await Blog.findById(blogId).populate('creator');
+  } catch (err) {
     const error = new HttpError(
-      "Something Went Wrong ,could not Find Blog",
+      'Something went wrong, could not delete blog.',
       500
     );
     return next(error);
   }
 
   if (!blog) {
-    const error = new HttpError("COuld not find Blog fro the provided Id", 404);
+    const error = new HttpError('Could not find blog for this id.', 404);
     return next(error);
   }
 
   if (blog.creator.id !== req.userData.userId) {
     const error = new HttpError(
-      'You are not allowed to delete this place.',
+      'You are not allowed to delete this blog.',
       401
     );
     return next(error);
@@ -195,24 +199,25 @@ const deleteBlog =  async(req, res, next) => {
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
-    await blog.remove({session:sess});
+    await blog.remove({ session: sess });
     blog.creator.blogs.pull(blog);
     await blog.creator.save({ session: sess });
     await sess.commitTransaction();
   } catch (err) {
     const error = new HttpError(
-      "Something Went Wrong ,could not Find Blog",
+      'Something went wrong, could not delete blog.',
       500
     );
     return next(error);
   }
 
-  fs.unlink(imagePath,err=>{
-    console.log(err)
-  })
+  fs.unlink(imagePath, err => {
+    console.log(err);
+  });
 
-  res.status(200).json({message:'Deleted Blog.'})
+  res.status(200).json({ message: 'Deleted blog.' });
 };
+
 
 exports.getAllBlogs = getAllBlogs;
 exports.getBlogsById = getBlogsById;
