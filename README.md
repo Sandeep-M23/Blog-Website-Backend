@@ -11,10 +11,11 @@ For frontend code click [Here](https://github.com/Sandeep-M23/blog-website-front
 
 ### Installation
 
+#### Install dependencies:
 ```bash
-# Install dependencies
 npm install
 ```
+
 Set the enrivonment variables **`DB_USER`** , **`DB_PASSWORD`** and **`DB_NAME`** and **`JWT_KEY`** 
 
 ```bash
